@@ -16,7 +16,6 @@ def _main():
             best_position = position
             min_cost_in_fuel = cost_in_fuel
 
-    print(best_position)
     print(min_cost_in_fuel)
 
 
