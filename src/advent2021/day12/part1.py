@@ -5,8 +5,7 @@ from typing import Set, Dict
 def _main():
     connections = _load_puzzle_input()
     graph = _build_graph(connections)
-    current_cave = graph['start']
-    print(graph)
+    print(_walk_graph(graph, 'start'))
 
 
 @dataclass
@@ -21,16 +20,16 @@ class Cave:
 
 
 def _walk_graph(graph: Dict[str, Cave], start_cave: str):
+    if start_cave == 'end':
+        return 1
+
+    n_paths = 0
     current_cave = graph[start_cave]
     current_cave.visited = True
-    for next_cave in current_cave.connected_caves:
-        if next_cave == 'end':
-            pass  # TODO stop
-        elif not graph[next_cave].can_be_visited:
-            pass  # TODO pass
-        else:
-            _walk_graph(graph, start_cave)
-        # TODO handle circles
+    for next_cave in sorted(current_cave.connected_caves):
+        if graph[next_cave].can_be_visited:
+            n_paths += _walk_graph(graph, next_cave)
+    return n_paths
 
 
 def _load_puzzle_input():
