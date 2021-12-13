@@ -11,15 +11,19 @@ def _main():
 @dataclass
 class Cave:
     is_big: bool
+    start_or_end: bool = False
     connected_caves: Set[str] = field(default_factory=set)
     n_visits: int = 0
 
     def can_be_visited(self, is_single_small_cave_visited_twice):
-        return self.is_big or (not self.n_visits == 0) or (not is_single_small_cave_visited_twice and self.n_visits < 2)
+        if self.start_or_end and self.n_visits > 0:
+            return False
+        n_visits_is_valid = (self.n_visits == 0) or (not is_single_small_cave_visited_twice and self.n_visits < 2)
+        return self.is_big or n_visits_is_valid
 
 
 def _load_puzzle_input():
-    with open('example1.txt') as f:
+    with open('input.txt') as f:
         connections = [line.strip() for line in f.readlines()]
     return connections
 
@@ -35,7 +39,7 @@ def _build_graph(connections):
 
 def _add_caves_to_graph(cave_in, cave_out, graph):
     if cave_in not in graph:
-        graph[cave_in] = Cave(is_big=cave_in.isupper())
+        graph[cave_in] = Cave(is_big=cave_in.isupper(), start_or_end=cave_in in ['start', 'end'])
     graph[cave_in].connected_caves.add(cave_out)
 
 
@@ -48,7 +52,11 @@ def _walk_graph(graph, start_cave, is_single_small_cave_visited_twice=False):
     is_single_small_cave_visited_twice |= not current_cave.is_big and current_cave.n_visits == 2
     for next_cave in sorted(current_cave.connected_caves):
         if graph[next_cave].can_be_visited(is_single_small_cave_visited_twice):
-            n_paths += _walk_graph(graph, next_cave)
+            n_paths += _walk_graph(
+                graph,
+                next_cave,
+                is_single_small_cave_visited_twice=is_single_small_cave_visited_twice
+            )
     current_cave.n_visits -= 1
     return n_paths
 
